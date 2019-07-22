@@ -1,22 +1,18 @@
 package com.secondcode.event;
 
 import com.secondcode.event.domain.promotion.ShockingEvent;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.TestTimedOutException;
-
+import org.junit.rules.ExpectedException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertFalse;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
+import java.util.concurrent.*;
+import static org.junit.Assert.*;
 
 public class BlockingQueueTest {
 
     @Test
-    public void createLinkedBlockingQueueWithCapacity() throws InterruptedException {
+    public void createLinkedBlockingQueueWithCapacity() {
         int capacity = 1_500;
         BlockingQueue<ShockingEvent> q = new LinkedBlockingQueue(capacity);
         q.addAll(getEvents(capacity));
@@ -32,6 +28,18 @@ public class BlockingQueueTest {
         assertTrue("is q empty?",q.isEmpty());
     }
 
+    @Test
+    public void getOneEventAndIsNotNull(){
+        try {
+            BlockingQueue<ShockingEvent> q = getFullQueue();
+            ShockingEvent e = q.take();
+            System.out.println(e.getId());
+            assertTrue(e.getId() != 0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test(expected = IllegalStateException.class)
     public void expectedIllegalStateExceptionWhenQisFullAndAddOne(){
         getFullQueue().add(new ShockingEvent(15135135));
@@ -40,7 +48,6 @@ public class BlockingQueueTest {
     @Test
     public void notThrowExceptionWhenQisFullAndOfferOne(){
         getFullQueue().offer(new ShockingEvent(15135135));
-        System.out.println("is wait?");
     }
 
     @Test
@@ -48,9 +55,19 @@ public class BlockingQueueTest {
         assertFalse(getFullQueue().offer(new ShockingEvent(15135135), 5000L, TimeUnit.MILLISECONDS));
     }
 
-    @Test(timeout = 3000L, expected = InterruptedException.class)
-    public void waitWhenQisFullAndPutOne() throws InterruptedException {
-       getFullQueue().put(new ShockingEvent(15135135));
+
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
+    @Test(expected = TimeoutException.class)
+    public void waitWhenQisFullAndPutOne() throws TimeoutException, ExecutionException, InterruptedException {
+        CompletableFuture.runAsync(()-> {
+            try {
+                getFullQueue().put(new ShockingEvent(15135135));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).get(2000L,TimeUnit.MILLISECONDS);
     }
 
 
@@ -65,7 +82,7 @@ public class BlockingQueueTest {
 
     private List<ShockingEvent> getEvents(int size) {
         List<ShockingEvent> events = new ArrayList<>(size);
-        for (int i=0; i < size; i++ ){
+        for (int i=1; i <= size; i++ ){
             events.add(new ShockingEvent(i));
         }
         return events;

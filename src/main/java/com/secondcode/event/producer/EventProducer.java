@@ -23,9 +23,8 @@ public class EventProducer {
 
     @Scheduled(fixedDelay = (cycle))
     public void produceScheduled(){
-        queue.add(new ShockingEvent(System.currentTimeMillis()));
-        queue.add(new ShockingEvent(System.currentTimeMillis()));
-        queue.add(new ShockingEvent(System.currentTimeMillis()));
-        queue.add(new ShockingEvent(System.currentTimeMillis()));
+        for (int i=0; i < 100; i++){
+            queue.add(new ShockingEvent(System.currentTimeMillis()));
+        }
     }
 }
