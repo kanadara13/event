@@ -1,9 +1,7 @@
 package com.secondcode.event;
 
 import com.secondcode.event.domain.promotion.ShockingEvent;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -33,7 +31,6 @@ public class BlockingQueueTest {
         try {
             BlockingQueue<ShockingEvent> q = getFullQueue();
             ShockingEvent e = q.take();
-            System.out.println(e.getId());
             assertTrue(e.getId() != 0);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -54,10 +51,6 @@ public class BlockingQueueTest {
     public void notThrowExceptionWhenQisFullAndOfferOneWithTimeLimit() throws InterruptedException {
         assertFalse(getFullQueue().offer(new ShockingEvent(15135135), 5000L, TimeUnit.MILLISECONDS));
     }
-
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     @Test(expected = TimeoutException.class)
     public void waitWhenQisFullAndPutOne() throws TimeoutException, ExecutionException, InterruptedException {
