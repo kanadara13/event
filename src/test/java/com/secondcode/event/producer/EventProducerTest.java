@@ -7,33 +7,39 @@ import org.junit.Test;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EventProducerTest {
 
     private EventProducer producer;
-    private BlockingQueue<ShockingEvent> queue;
+    private EventQueueBalancer mockBalancer;
 
     @Before
     public void setUp() throws Exception {
-        queue = new BlockingQueueConfig().getQueue();
-        producer = new EventProducer(queue);
+        mockBalancer = mock(EventQueueBalancer.class);
+        producer = new EventProducer(mockBalancer);
     }
 
-
-    @Test
-    public void produceEventOnce(){
+    @Test(expected = NullPointerException.class)
+    public void addOneInQueue_ThrowNullPointException(){
         ShockingEvent event = new ShockingEvent(1);
-        assertTrue(producer.produce(event));
+        producer.produce(event);
+        verify(mockBalancer).getProperQueue();
     }
-
 
     @Test
-    public void produceEventMultiple(){
-        for (int i=0; i<10_000;i++){
-            ShockingEvent event = new ShockingEvent((int) Math.random());
-            new Thread(String.valueOf(new EventProducer(queue).produce(event))).start();
-        }
+    public void shouldAddOne(){
+        ShockingEvent event = new ShockingEvent(1);
+        when(mockBalancer.getProperQueue()).thenReturn(new LinkedBlockingQueue<>());
+        producer.produce(event);
+        verify(mockBalancer).getProperQueue();
     }
+
+
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventScheduler {
 
-    final int cycle = 100;
+    final int cycle = 500;
 
     private EventQueueConsumer eventQueueConsumer;
 
